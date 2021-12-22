@@ -1,0 +1,64 @@
+# define devices
+alias pipeCO2 d0
+alias tankStage1 d1
+alias mixerFinal d2
+alias tankFinal d3
+alias tankBase d4
+alias pump2Base d5
+
+# define varialbes
+alias idealBasePressure r0
+alias tempTankStage1 r1
+alias tempCO2 r2
+alias tankFinalPressure r3
+alias maxFinalPressure r4
+alias tankBasePressure r5
+alias compare r6
+
+# Initialize
+move idealBasePressure 102
+move maxFinalPressure 5000
+
+# Main Loop
+Loop:
+    # load pipe temperatures and tank pressure
+    l tempTankStage1 tankStage1 Temperature
+    l tempCO2 pipeCO2 Temperature
+    l tankFinalPressure tankFinal Pressure
+
+    slt compare tankFinalPressure maxFinalPressure
+    beq compare 1 IdealGas
+    s mixerFinal On 0
+j CheckBasePump
+
+# Ideal Gas Law
+IdealGas:
+    mul compare 9 tempTankStage1
+    div compare tempCO2 compare
+    add compare compare 1
+    div compare 100 compare
+
+    # set mixer setting and turn on
+    s mixerFinal Setting compare
+    s mixerFinal On 1
+j CheckBasePump
+
+CheckBasePump:
+# check if tank base pressure is less than ideal base pressure
+    # turn on pump to base if true
+    # otherwise, turn off pump to base
+    l tankBasePressure tankBase Pressure
+    slt compare tankBasePressure idealBasePressure
+    beq compare 1 ActivateBasePump
+j End
+
+# turn on pump2Base
+ActivateBasePump:
+    s pump2Base On 1
+j End
+
+# Wait 1 second
+End:
+    yield
+    yield
+j Loop

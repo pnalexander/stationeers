@@ -1,0 +1,44 @@
+# define devices
+alias pipeN d0
+alias pipeO d1
+alias stage1Mixer d2
+alias stage1Tank d3
+
+# define varialbes
+alias minMixPressure r0
+alias tempN r1
+alias tempO r2
+alias compare r5
+
+# Initialize
+move minMixPressure 7000
+
+# Main Loop
+Loop:
+    # load pipe temperatures and tank pressure
+    l tempN pipeN Temperature
+    l tempO pipeO Temperature
+    l compare stage1Tank Pressure
+
+    slt compare compare minMixPressure
+    beq compare 1 IdealGas
+    s stage1Mixer On 0
+j End
+
+# Ideal Gas Law
+IdealGas:
+    mul compare 2 tempN
+    div compare tempO compare
+    add compare compare 1
+    div compare 100 compare
+
+    # set mixer setting and turn on
+    s stage1Mixer Setting compare
+    s stage1Mixer On 1
+j End
+
+# Wait 1 second
+End:
+    yield
+    yield
+j Loop
