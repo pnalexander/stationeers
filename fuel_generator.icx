@@ -1,0 +1,58 @@
+#Devices
+alias TempDial d0 #Dial to set median temp (C)
+alias TempSens d1 #Gas sensor to monitor temp
+alias Heater d2 #Memory chip to BatchWriter
+alias Cooler d3 #Memory chip to BatchWriter
+
+#Variables
+alias rmTempSet r0
+alias maxTemp r1
+alias minTemp r2
+alias curTemp r3
+alias setHeater r4
+alias setCooler r5
+alias boolBothOff r6
+
+#Beginning of cycle
+Cycle:
+#load current and desired temps into vars
+l rmTempSet TempDial Setting
+add maxTemp rmTempSet 20
+sub minTemp rmTempSet 0
+l curTemp TempSens Temperature
+
+sub curTemp curTemp 273.15 #convert to Celsius
+trunc curTemp curTemp #convert to whole number
+s db Setting curTemp #set IC to curTemp for debug
+
+#Compare current to desired temps and set command
+slt setHeater curTemp minTemp
+slt setCooler maxTemp curTemp
+
+#Check if both setCool and setHeat are 0,
+#then jump to setBothOffIf
+nor boolBothOff setHeater setCooler
+beq boolBothOff 1 setBothOffIf
+
+#else send command to devices and restart cycle
+s Heater Setting setHeater
+s Cooler Setting setCooler
+yield
+j Cycle
+
+#Check if curTemp has reached rmTempSet
+#then jump to setBothOff
+setBothOffIf:
+beq rmTempSet curTemp setBothOff
+yield
+j Cycle
+
+#Set both devices off when room temp
+#reaches room temp dial setting
+#then restart cycle
+setBothOff:
+s Heater Setting 0
+s Cooler Setting 0
+move boolBothOff 0
+yield
+j Cycle

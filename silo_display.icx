@@ -1,0 +1,39 @@
+
+#Define Devices
+alias silo1 d0
+alias silo2 d1
+alias silo3 d2
+alias display1 d3
+alias display2 d4
+alias display3 d5
+
+#Define Variables
+alias count1 r0
+alias count2 r1
+alias count3 r2
+
+#Main Loop
+Loop:
+    # Load recent values
+    l count1 silo1 Quantity
+    l count2 silo2 Quantity
+    l count3 silo3 Quantity
+
+    # Send recent values to displays
+    s display1 Setting count1
+    s display2 Setting count2
+    s display3 Setting count3
+
+    # Wait 5 seconds and repeat
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+
+j Loop
