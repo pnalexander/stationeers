@@ -27,11 +27,12 @@ Loop:
     l tankFinalPressure tankFinal Pressure
 
     slt compare tankFinalPressure maxFinalPressure
-    beq compare 1 IdealGas
-    s mixerFinal On 0
+    beq compare 1 IdealGas # set mixer setting and turn on
+
+    s mixerFinal On 0 # turn off mixerFinal
 j CheckBasePump
 
-# Ideal Gas Law
+# Ideal Gas Law - Sets mixer Setting and On parameters
 IdealGas:
     mul compare 9 tempTankStage1
     div compare tempCO2 compare
@@ -40,19 +41,20 @@ IdealGas:
 
     # set mixer setting and turn on
     s mixerFinal Setting compare
-    s mixerFinal On 1
+    s mixerFinal On 1 # turn on mixerFinal
 j CheckBasePump
 
+# Compare tankBasePressure to idealBasePressure
 CheckBasePump:
-# check if tank base pressure is less than ideal base pressure
-    # turn on pump to base if true
-    # otherwise, turn off pump to base
     l tankBasePressure tankBase Pressure
+
     slt compare tankBasePressure idealBasePressure
-    beq compare 1 ActivateBasePump
+    beq compare 1 ActivateBasePump # turn on pump2Base
+
+    s pump2Base On 0 # turn off pump2Base
 j End
 
-# turn on pump2Base
+# Turn on pump2Base
 ActivateBasePump:
     s pump2Base On 1
 j End
