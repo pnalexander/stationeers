@@ -1,43 +1,74 @@
 # Define devices
-alias maxCapacity d0 # Batch Reader (sum(Maximum))
-alias curCharge d1 # Batch Reader (sum(Charge))
+alias rMaxCapacity d0 # Batch Reader (sum(Maximum))
+alias rCurCharge d1 # Batch Reader (sum(Charge))
 alias memMinCharge d2 # Optional - Memory
 alias memMaxCharge d3 # Optional - Memory
 alias generator d4 # Single Generator
-alias generators d5 # Optional - Memory to Batch Writer
+alias generators d5 # Optional - Memory
 
 # Define variables
 alias compare r0
 alias minCharge r1
 alias maxCharge r2
+alias maxCapacity r3
+alias curCharge r4
+alias defaultMinCharge r5
+alias defaultMaxCharge r6
 
-# Set min and max charge if not set
-sdns memMinCharge memMinCharge 50
-sdns memMaxCharge memMaxCharge 100
+# Define constants
+define defaultMinCharge 50
+define defaultMaxCharge 100
 
-# Convert to percentages
-div memMinCharge memMinCharge 100
-div memMaxCharge memMaxCharge 100
-
-# Set min and max charge in Joules (J)
-mul minCharge memMinCharge maxCapacity
-mul maxCharge memMaxCharge maxCapacity
+# Initialize
+Init:
+    l minCharge memMinCharge Setting
+    l maxCharge memMaxCharge Setting
+    l maxCapacity rMaxCapacity Setting
+    l curCharge rCurCharge Setting
+j Run
 
 # Main loop
 Run:
+
+    # Set charge range if not set
+    bdns memMinCharge DefaultMinCharge
+    bdns memMaxCharge DefaultMaxCharge
+
+    # Convert to percentages
+    div minCharge minCharge 100
+    div maxCharge maxCharge 100
+
+    # Set min and max charge in Joules (J)
+    mul minCharge minCharge maxCapacity
+    mul maxCharge maxCharge maxCapacity
     
-    # Turn on generators if current charge is too low
+    # Turn on generators if curCharge is too low
     slt compare curCharge minCharge
     beq compare 1 TurnOnGenerators
 
-    # Turn off generators if current charge is sufficient
-    sgez compare curCharge maxCharge
+    #Turn off generators if curCharge is sufficient
+    sge compare curCharge maxCharge
     beq compare 1 TurnOffGenerators
 
+    # Charge within range? Keep generators on
     s generator On 1
     s generators Setting 1
 
 j End
+
+# Set minCharge to default
+DefaultMinCharge:
+    l minCharge memMinCharge Setting
+    bgtz minCharge Run
+    move minCharge defaultMinCharge
+j Run
+
+# Set maxCharge to default
+DefaultMaxCharge:
+    l maxCharge memMaxCharge Setting
+    bgtz maxCharge Run
+    move maxCharge defaultMaxCharge
+j Run
 
 # Turn on a single generator
 TurnOnGenerator:
