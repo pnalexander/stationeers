@@ -1,0 +1,53 @@
+# Description:
+# Mixes 2 gases independent of temperatures
+# for perfect 2:1 fuel mixture (H2:O2)
+# until fuel line reaches target pressure
+
+# Define devices
+alias pipeH d0 # Hydrogen pipe
+alias pipeO d1 # Oxygen pipe
+alias pipeFuel d2 # Fuel pipe
+alias fuelMixer d3 # Gas mixer
+
+# Initialize variables
+alias targetPressure r0 # Target fuel pressure
+alias tempH r1 # Hydrogen temperature
+alias tempO r2 # Oxygen temperature
+alias Compare r3 # Temporary variable
+
+# Define constants
+define targetPressure 1000 # 1 MPa
+
+# Main loop
+Loop:
+    # Load pipe temperatures and fuel pressure
+    l tempH pipeH Temperature # Hydrogen temperature
+    l tempO pipeO Temperature # Oxygen temperature
+    l Compare pipeFuel Pressure # Fuel line pressure
+
+    # Jump to Ideal Gas if fuel pressure < target
+    slt Compare Compare targetPressure
+    beq Compare 1 IdealGas
+
+    # Fuel pressure >= target pressure
+    # Turn off mixer
+    s fuelMixer On 0
+j End
+
+# Ideal Gas Law
+IdealGas:
+    mul Compare 2 tempH
+    div Compare tempO Compare
+    add Compare Compare 1
+    div Compare 100 Compare
+
+    # Set gas mixer setting and turn on
+    s fuelMixer Setting Compare
+    s fuelMixer On 1
+j End
+
+# Wait 2 power ticks in game
+End:
+    yield
+    yield
+j Loop

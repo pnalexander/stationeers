@@ -29,10 +29,9 @@ j Run
 
 # Main loop
 Run:
-
     # Set charge range if not set
-    bdns memMinCharge DefaultMinCharge
-    bdns memMaxCharge DefaultMaxCharge
+    blez minCharge DefaultMinCharge
+    blez maxCharge DefaultMaxCharge
 
     # Convert to percentages
     div minCharge minCharge 100
@@ -58,15 +57,11 @@ j End
 
 # Set minCharge to default
 DefaultMinCharge:
-    l minCharge memMinCharge Setting
-    bgtz minCharge Run
     move minCharge defaultMinCharge
 j Run
 
 # Set maxCharge to default
 DefaultMaxCharge:
-    l maxCharge memMaxCharge Setting
-    bgtz maxCharge Run
     move maxCharge defaultMaxCharge
 j Run
 
