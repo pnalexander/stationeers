@@ -1,0 +1,66 @@
+alias dial d0 # Ingot selector dial
+alias qty1 d1 # Ingot Dispenser IC 1
+alias qty2 d2 # Ingot Dispenser IC 2
+alias qty3 d3 # Ingot Dispenser IC 3
+alias qtyDisplay d4 # Quantity display console
+alias Hash db # Ingot hash
+
+alias quantity r1
+
+Main:
+yield
+l r0 dial Setting
+# l r1 quantity Setting
+# s qtyDisplay Setting r1
+beq r0 0 End
+
+mul r0 r0 2
+sub r0 r0 1
+brnez r0 r0
+    s db Setting -1301215609 # Iron
+j SetQuantity
+    s db Setting -404336834 # Copper
+j SetQuantity
+    s db Setting 226410516 # Gold
+j SetQuantity
+    s db Setting -929742000 # Silver
+j SetQuantity
+    s db Setting -290196476 # Silicon
+j SetQuantity
+    s db Setting -1406385572 # Nickel
+j SetQuantity
+    s db Setting 2134647745 # Lead
+j SetQuantity
+    s db Setting 1724793494 # Coal
+j SetQuantity
+    s db Setting -983091249 # Cobalt
+j SetQuantity
+    s db Setting -1516581844 # Uranium
+j SetQuantity
+
+# Set Quantity Display
+SetQuantity:
+    l quantity qty1 Setting
+    breqz quantity 3
+    s qtyDisplay Setting  quantity
+    bnez quantity Main
+
+    l quantity qty2 Setting
+    breqz quantity 3
+    s qtyDisplay Setting  quantity
+    bnez quantity Main
+
+    l quantity qty3 Setting
+    breqz quantity 3
+    s qtyDisplay Setting  quantity
+    bnez quantity Main
+
+    # Set Quantity Display to 0 by default
+    s qtyDisplay Setting 0
+j Main
+
+End:
+    yield
+    s db Setting 0
+    s qtyDisplay Setting 0
+j Main

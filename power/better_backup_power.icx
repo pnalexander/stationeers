@@ -40,18 +40,22 @@ Run:
     # Set min and max charge in Joules (J)
     mul minCharge minCharge maxCapacity
     mul maxCharge maxCharge maxCapacity
+
+    # Generator on? Check current battery charge
+    l compare generator On
+    beq compare 1 CheckChargeRange
     
     # Turn on generators if curCharge is too low
     slt compare curCharge minCharge
     beq compare 1 TurnOnGenerators
 
     #Turn off generators if curCharge is sufficient
-    sge compare curCharge maxCharge
-    beq compare 1 TurnOffGenerators
+    # sge compare curCharge maxCharge
+    # beq compare 1 TurnOffGenerators
 
     # Charge within range? Keep generators on
-    s generator On 1
-    s generators Setting 1
+    s generator On 0
+    # s generators Setting 0
 
 j End
 
@@ -63,6 +67,13 @@ j Run
 # Set maxCharge to default
 DefaultMaxCharge:
     move maxCharge defaultMaxCharge
+j Run
+
+# Check current battery charge
+CheckChargeRange:
+    #Turn off generators if curCharge is sufficient
+    sge compare curCharge maxCharge
+    beq compare 1 TurnOffGenerators
 j Run
 
 # Turn on a single generator
@@ -87,6 +98,7 @@ j End
 TurnOffGenerators:
     bdns generators TurnOffGenerator
     s generators Setting 0
+j End
 
 # Wait 0.5s and then run main loop
 End:
