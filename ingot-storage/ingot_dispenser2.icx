@@ -1,0 +1,66 @@
+# Define devices
+alias HashIC d0
+alias button d1
+alias siliconSilo d2
+alias nickelSilo d3
+alias leadSilo d4
+alias coalSilo d5
+alias quantity db
+
+# Temporary variable
+alias tmp r0
+alias activated r1
+
+# Main loop
+Loop:
+    # Close all silos
+    s siliconSilo Open 0
+    s nickelSilo Open 0
+    s leadSilo Open 0
+    s coalSilo Open 0
+
+    l activated button Activate
+
+    l tmp HashIC Setting
+    beq tmp -290196476 Silicon
+    beq tmp -1406385572 Nickel
+    beq tmp 2134647745 Lead
+    beq tmp 1724793494 Coal
+
+    # Has not on this IC - Reset
+    move tmp 0
+j End
+
+# Open Silicon silo
+Silicon:
+    l tmp siliconSilo Quantity
+    beqz activated End
+    s siliconSilo Open 1
+j End
+
+# Open Nickel silo
+Nickel:
+    l tmp nickelSilo Quantity
+    beqz activated End
+    s nickelSilo Open 1
+j End
+
+# Open Lead silo
+Lead:
+    l tmp leadSilo Quantity
+    beqz activated End
+    s leadSilo Open 1
+j End
+
+# Open Coal silo
+Coal:
+    l tmp coalSilo Quantity
+    beqz activated End
+    s coalSilo Open 1
+j End
+
+# Wait 0.5s and then run main loop
+End:
+    s quantity Setting tmp 
+    yield
+j Loop

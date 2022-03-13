@@ -1,0 +1,71 @@
+# Define devices
+alias rMaxCapacity d0 # Batch Reader (sum(Maximum))
+alias rCurCharge d1 # Batch Reader (sum(Charge))
+alias memMinCharge d2 # Optional - Memory
+alias memMaxCharge d3 # Optional - Memory
+alias generator d4 # Single Generator
+alias chargingFlag db # Keeps generator on
+
+# Define variables
+alias compare r0
+alias minCharge r1
+alias maxCharge r2
+alias maxCapacity r3
+alias curCharge r4
+
+# Initialize
+s chargingFlag Setting 0
+
+# Main loop
+Run:
+    # Load device settings
+    l minCharge memMinCharge Setting
+    l maxCharge memMaxCharge Setting
+    l maxCapacity rMaxCapacity Setting
+    l curCharge rCurCharge Setting
+
+    # Convert to percentages
+    div minCharge minCharge 100
+    div maxCharge maxCharge 100
+
+    # Set min and max charge in Joules (J)
+    mul minCharge minCharge maxCapacity
+    mul maxCharge maxCharge maxCapacity
+    
+    # Turn on generator if curCharge is too low
+    slt compare curCharge minCharge
+    bgtz compare TurnOnGenerator
+
+    # Generator on? Check current battery charge
+    l compare chargingFlag Setting
+    bgtz compare CheckChargeRange
+
+    # Turn generator off by default
+    s generator On 0
+
+j End
+
+# Check current battery charge
+CheckChargeRange:
+    #Turn off generators if curCharge is sufficient
+    sge compare curCharge maxCharge
+    beq compare 1 TurnOffGenerator
+# Charge hasn't reached maximum, keep generator on
+j TurnOnGenerator
+
+# Turn on a single generator
+TurnOnGenerator:
+    s generator On 1
+    s chargingFlag Setting 1
+j End
+
+# Turn off a single generator
+TurnOffGenerator:
+    s generator On 0
+    s chargingFlag Setting 0
+j End
+
+# Wait 0.5s and then run main loop
+End:
+    yield
+j Run

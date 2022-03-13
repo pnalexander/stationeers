@@ -1,0 +1,46 @@
+# Define devices
+alias HashIC d0
+alias button d1
+alias cobaltSilo d2
+alias uraniumSilo d3
+alias quantity db
+
+# Temporary variable
+alias tmp r0
+alias activated r1
+
+# Main loop
+Loop:
+    # Close all silos
+    s cobaltSilo Open 0
+    s uraniumSilo Open 0
+
+    l activated button Activate
+
+    l tmp HashIC Setting
+    beq tmp -983091249 Cobalt
+    beq tmp -1516581844 Uranium
+
+    # Has not on this IC - Reset
+    move tmp 0
+j End
+
+# Open Cobalt silo
+Cobalt:
+    l tmp cobaltSilo Quantity
+    beqz activated End
+    s cobaltSilo Open 1
+j End
+
+# Open Uranium silo
+Uranium:
+    l tmp uraniumSilo Quantity
+    beqz activated End
+    s uraniumSilo Open 1
+j End
+
+# Wait 0.5s and then run main loop
+End:
+    s quantity Setting tmp 
+    yield
+j Loop
