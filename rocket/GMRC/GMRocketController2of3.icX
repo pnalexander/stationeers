@@ -1,0 +1,78 @@
+#Written: December 12, 2021
+#Author: GREEN_MAN
+#Updated: December 13, 2021
+
+#Description:
+#Tightly Coupled 3 Chip Program
+#to control all rocket functions
+#This is Chip 2 of 3
+
+#Version: 1.0
+
+# define devices
+alias Rocket d0 #Automation Rocket Capsule
+alias OreMiner d1 #Ore Miner on Rocket
+alias IceMiner d2 #Ice Miner on Rocket
+alias RocketController d3 #IC3 housing
+alias OreSilo d4 # Ore Silo on Rocket
+alias IceSilo d5 # Ice Silo on Rocket
+alias MiningFlag db #Mining Flag set by IC 1
+
+# Initialize
+alias rState r1
+alias Compare r5
+alias deviceState r6 # holds on/off value 
+s OreMiner On 1
+s IceMiner On 1
+
+
+#------------------------------------------------#
+# Main program Loop #----------------------------#
+
+Loop:
+    l rState Rocket Mode
+        
+    # Write Cargo Value
+    l Compare OreSilo Quantity
+    s RocketController Setting Compare
+    
+    # Adjust Miners
+    l Compare MiningFlag Setting
+    l deviceState OreMiner Activate 
+    bne Compare deviceState ToggleMiners
+
+    # Adjust Silos
+    blez rState OpenSilos 
+    bgtz rState CloseSilos
+
+j End
+# End Main Program Loop #------------------------#
+#------------------------------------------------#
+
+#-----------------#
+# Subroutines ----#
+ToggleMiners:
+    s OreMiner Activate Compare
+    s IceMiner Activate Compare
+
+j End
+#-----------------#
+OpenSilos:
+    l Compare OreSilo Open
+    bgtz Compare End
+    s OreSilo Open 1
+    s IceSilo Open 1
+j End
+#-----------------#
+CloseSilos:
+    l Compare OreSilo Open
+    blez Compare End
+    s OreSilo Open 0
+    s IceSilo Open 0    
+j End
+#-----------------#
+End:
+    yield
+j Loop
+# End Subroutines #
+#-----------------#

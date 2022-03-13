@@ -1,0 +1,127 @@
+# Written: December 12, 2021
+# Author: GREEN_MAN
+# Updated: December 13, 2021
+
+# Description:
+# Tightly Coupled 3 Chip Program
+# to control all rocket functions
+# This is Chip 1 of 3
+
+# Version: 1.0
+
+# define devices
+alias Rocket d0 #Automation Rocket Capsule
+alias MiningController d1 #Rocket Mining Cargo Silo
+alias SwitchEnable d2 #Rocket Ice Cargo Silo
+alias FuelMixer d3 # Switch to Enable Launch
+alias PipeH d4 # FuelMixer for rocket
+alias PipeO2 d5 # Miningcontroller IC 2
+alias SiloFlag db #silo empty flag from IC 3
+
+# define variables
+alias rState r0  # Reads the Current Rocket State
+alias rFuel r1  # Reads Current Rocket Fuel level
+alias rCollectable r3 # Reads Mining Flag of rocket
+alias Compare r4 # Temp variable for Comparisons
+alias tempO r5 # Temp of Oxygen Pipe for fuel
+alias tempH r6 # Temp of Hydrogen Pipe for fuel
+
+# define constants
+alias maxfuel r11 # Amount of Fuel put in rocket
+alias minfuel r12 # Fuel left when returning
+
+# Initialize
+move minfuel 1000
+move maxfuel 7400
+
+#------------------------------------------------#
+# Main program Loop #----------------------------#
+Loop: 
+    # Read Current Values
+    l rCollectable Rocket CollectableGoods
+    l rFuel Rocket Fuel
+    l rState Rocket Mode
+
+    # In Flight Checks --------------------------#
+    beq rState 0 State0Checks #on ground Checks
+    beq rState 5 End # do nothing while returning
+    beq rState 6 End # do nothing while landing
+    slt Compare rFuel minfuel #Check if low fuel
+    
+    # Change Rocket State
+    beq Compare 1 Return2base #Return if low fuel
+    l Compare SiloFlag Setting
+    beq Compare 600 Return2base #Return if Full
+    beq rState 2 Stop2Mine #stop after moving
+    beq rState 4 Check4Goods #mine or move
+    #-------------------------------------------#
+
+j End
+
+# On the Ground Checks ---------------------#
+State0Checks:
+# refuel
+    # If rFuel < maxFuel then Compare=1
+    slt Compare rFuel maxfuel 
+    beq Compare 1 Refuel #Return when out of fuel
+    s FuelMixer On 0
+
+# Check Cargo
+    l Compare SiloFlag Setting
+    bgtz Compare End # break if unloading
+    l Compare SwitchEnable Setting
+    blez Compare End # Break if switch is off
+# Launch Criteria Met
+# launching rocket
+    s Rocket Activate 2
+j End
+#-------------------------------------------#
+
+# End Main Program Loop #------------------------#
+#------------------------------------------------#
+
+#-----------------#
+# Subroutines ----#
+Refuel:
+    # Set Fuel Mix Ratio
+    l tempO PipeO2 Temperature
+    l tempH PipeH Temperature
+    
+    mul Compare 2 tempH
+    div Compare tempO Compare
+    add Compare Compare 1
+    div Compare 100 Compare
+
+    s FuelMixer Setting Compare
+    s FuelMixer On 1
+j End
+#-----------------#
+Return2base:
+    s MiningController Setting 0
+    s Rocket Activate 5
+j End
+#-----------------#
+Stop2Mine:
+    s Rocket Activate 4
+j End
+#-----------------#
+Check4Goods:
+    bgtz rCollectable StartMiners
+    blez rCollectable Move
+j End
+#-----------------#
+StartMiners:
+    s MiningController Setting 1
+j End
+#-----------------#
+Move:
+    s MiningController Setting 0
+    s Rocket Activate 2
+j End
+#-----------------#
+End:
+    yield
+j Loop
+# End Subroutines #
+#-----------------#
+

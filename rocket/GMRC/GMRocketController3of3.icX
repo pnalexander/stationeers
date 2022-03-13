@@ -1,0 +1,115 @@
+# Written: December 12, 2021
+# Author: GREEN_MAN
+# Updated: December 13, 2021
+
+# Description:
+# Tightly Coupled 3 Chip Program
+# to control all rocket functions
+# This is Chip 3 of 3
+
+# Version: 1.0
+
+#Define Devices
+alias Rocket d0 # Automation Rocket Capsule
+alias RocketController d1 # Main chip housing
+alias Light d2 # LED display light
+alias DisplayState d5 # Displays Rocket State
+alias DisplayFuel d4 # Displays Rocket Fuel
+alias DisplayCargo d3 # Displays Rocket Cargo
+
+#Define Variables
+alias rState r11
+alias rFuel r12
+alias rCargo r13
+alias Compare r14
+
+#Define Constants
+alias Red r0
+alias Orange r1
+alias Yellow r2
+alias Blue r3
+alias Purple r4
+alias Green r5
+alias White r6
+alias maxfuel r7 # Amount of Fuel put in rocket
+alias minfuel r8 # Fuel left when returning
+
+# Initialize
+move Red 4
+move Orange 3
+move Yellow 9
+move Blue 0
+move Purple 11 
+move Green 2
+move White 1
+move minfuel 1000
+move maxfuel 7700
+
+s DisplayFuel Color Orange
+s DisplayCargo Color Yellow
+s DisplayState Color Blue
+s Light Color Green
+
+#------------------------------------------------#
+# Main program Loop #----------------------------#
+Loop:
+    l rState Rocket Mode
+    l rFuel Rocket Fuel
+    l rCargo RocketController Setting
+
+    s DisplayState Setting rState
+    s DisplayFuel Setting rFuel
+    s DisplayCargo Setting rCargo
+
+    j UpdateLightColor
+
+    yield
+j End
+# End Main Program Loop #------------------------#
+#------------------------------------------------#
+
+
+#-----------------#
+# Subroutines ----#
+UpdateLightColor:
+    beq rState 2 SetBlue
+    beq rState 4 SetPurple
+    beq rState 5 SetRed
+    # If rFuel < maxFuel then Compare=1
+    slt Compare rFuel maxfuel
+    beq Compare 1 setOrange
+    l Compare RocketController Setting
+    bgtz Compare SetYellow
+    j SetGreen
+j End
+#-----------------#
+setOrange:
+    s Light Color Orange
+j End
+#-----------------#
+SetYellow:
+    s Light Color Yellow
+j End
+#-----------------#
+SetRed:
+    s Light Color Red
+j End
+#-----------------#
+SetBlue:
+    s Light Color Blue
+j End
+#-----------------#
+SetGreen:
+    s Light Color Green
+j End
+#-----------------#
+SetPurple:
+    s Light Color Purple
+j End
+#-----------------#
+End:
+    yield
+    yield
+j Loop
+# End Subroutines #
+#-----------------#
