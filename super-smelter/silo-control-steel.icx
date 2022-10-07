@@ -1,0 +1,33 @@
+alias furnace d0
+alias siloIron d1
+alias siloCoal d2
+
+alias occupied r0
+
+Loop:
+    s siloIron Open 0
+    s siloCoal Open 0
+    l occupied furnace Reagents
+    bgtz occupied Close
+
+    s siloIron Open 1
+    s siloCoal Open 1
+j Close
+
+Close:
+    s siloIron Open 0
+    s siloCoal Open 0
+j End
+
+End:
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+    yield
+j Loop

@@ -1,0 +1,54 @@
+alias AF1 d0
+alias AF2 d1
+alias AF3 d2
+alias LED1 d3
+alias LED2 d4
+alias LED3 d5
+
+alias tmp r1
+
+Loop:
+    l tmp AF1 RecipeHash
+    bnezal tmp SetActive1
+    beqzal tmp LED1Off
+
+    l tmp AF2 RecipeHash
+    bnezal tmp SetActive2
+    beqzal tmp LED2Off
+
+    l tmp AF3 RecipeHash
+    bnezal tmp SetActive3
+    beqzal tmp LED3Off
+j End
+
+SetActive1:
+    s AF1 Activate 1
+    s LED1 On 1
+j ra
+
+SetActive2:
+    s AF2 Activate 1
+    s LED2 On 1
+j ra
+
+SetActive3:
+    s AF3 Activate 1
+    s LED3 On 1
+j ra
+
+LED1Off:
+    s LED1 On 0
+j ra
+
+LED2Off:
+    s LED2 On 0
+j ra
+
+LED3Off:
+    s LED3 On 0
+j ra
+
+End:
+    yield
+    yield
+j Loop

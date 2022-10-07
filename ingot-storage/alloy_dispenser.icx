@@ -1,0 +1,66 @@
+# Define devices
+alias HashIC d0
+alias button d1
+alias steelSilo d2
+alias solderSilo d3
+alias electrumSilo d4
+alias invarSilo d5
+alias quantity db
+
+# Temporary variable
+alias tmp r0
+alias activated r1
+
+# Main loop
+Loop:
+    # Close all silos
+    s steelSilo Open 0
+    s solderSilo Open 0
+    s electrumSilo Open 0
+    s invarSilo Open 0
+
+    l activated button Activate
+
+    l tmp HashIC Setting
+    beq tmp -654790771 Steel
+    beq tmp -82508479 Solder
+    beq tmp 502280180 Electrum
+    beq tmp -297990285 Invar
+
+    # Has not on this IC - Reset
+    move tmp 0
+j End
+
+# Open Steel silo
+Steel:
+    l tmp steelSilo Quantity
+    beqz activated End
+    s steelSilo Open 1
+j End
+
+# Open Solder silo
+Solder:
+    l tmp solderSilo Quantity
+    beqz activated End
+    s solderSilo Open 1
+j End
+
+# Open Electrum silo
+Electrum:
+    l tmp electrumSilo Quantity
+    beqz activated End
+    s electrumSilo Open 1
+j End
+
+# Open Invar silo
+Invar:
+    l tmp invarSilo Quantity
+    beqz activated End
+    s invarSilo Open 1
+j End
+
+# Wait 0.5s and then run main loop
+End:
+    s quantity Setting tmp 
+    yield
+j Loop

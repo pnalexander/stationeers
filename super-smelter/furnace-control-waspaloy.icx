@@ -1,0 +1,97 @@
+alias Furnace d0
+alias Pumpcool d1
+alias Pumpfuel d2
+alias SiloSilver d3
+alias SiloNickel d4
+alias SiloLead d5
+
+alias temp r0
+alias press r1
+alias maxtemp r7
+alias mintemp r8
+alias maxpress r9
+alias minpress r10
+alias occupied r2
+alias recipe r14
+alias lowTemp r15
+alias tmp r12
+
+move recipe 156348098 # Waspaloy
+
+Init:
+    s Pumpcool Setting 20
+    s Pumpfuel Setting 3
+    move maxtemp 800
+    move mintemp 400
+    move minpress 50000
+    move maxpress 55000
+    move lowTemp 0
+    move tmp 0
+    s Pumpfuel On 0
+    s Pumpcool On 0
+    s Furnace SettingInput 0
+    s Furnace Open 0
+    s SiloSilver Open 0
+    s SiloNickel Open 0
+    s SiloLead Open 0
+    s db Setting recipe
+j Loop
+
+Loop:
+    yield
+    s Furnace Activate 1
+    l r13 Furnace Open
+    l r11 Furnace RecipeHash
+    s Furnace SettingInput 100
+    l temp Furnace Temperature
+    l press Furnace Pressure
+    select maxpress maxpress maxpress 50000
+    select maxtemp maxtemp maxtemp 10000
+    slt r3 temp mintemp
+    sgt r4 temp maxtemp
+    slt r5 press minpress
+    select r5 minpress r5 0
+    sgt r6 press maxpress
+    breqz r3 3
+    add lowTemp lowTemp 1
+    beq lowTemp 20 Evacuate
+    or r3 r3 r5
+    mul r6 r6 30
+    s Pumpfuel On r3
+    s Pumpcool On r4
+    s Furnace SettingOutput r6
+    beq recipe r11 End
+    bgtz r13 End
+j Loop
+
+Evacuate:
+    s Pumpfuel On 0
+    s Pumpcool On 0
+    s Furnace SettingOutput 100
+    l press Furnace Pressure
+    bge press minpress Evacuate
+j Init
+
+ActivateSilos:
+    yield
+    l tmp SiloSilver Quantity
+    beqz tmp ActivateSilos
+    l tmp SiloNickel Quantity
+    beqz tmp ActivateSilos
+    l tmp SiloLead Quantity
+    beqz tmp ActivateSilos
+    s SiloSilver Open 1
+    s SiloNickel Open 1
+    s SiloLead Open 1
+    yield
+    s SiloSilver Open 0
+    s SiloNickel Open 0
+    s SiloLead Open 0
+j Init
+
+End:
+    l occupied Furnace Reagents
+    s Furnace Open 1
+    yield
+    bgtz occupied End
+j ActivateSilos

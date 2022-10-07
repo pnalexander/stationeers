@@ -1,0 +1,46 @@
+# Define devices
+alias HashIC d0
+alias button d1
+alias hastelloySilo d2
+alias stelliteSilo d3
+alias quantity db
+
+# Temporary variable
+alias tmp r0
+alias activated r1
+
+# Main loop
+Loop:
+    # Close all silos
+    s hastelloySilo Open 0
+    s stelliteSilo Open 0
+
+    l activated button Activate
+
+    l tmp HashIC Setting
+    beq tmp 1579842814 Hastelloy
+    beq tmp -1897868623 Stellite
+
+    # Has not on this IC - Reset
+    move tmp 0
+j End
+
+# Open Hastelloy silo
+Hastelloy:
+    l tmp hastelloySilo Quantity
+    beqz activated End
+    s hastelloySilo Open 1
+j End
+
+# Open Stellite silo
+Stellite:
+    l tmp stelliteSilo Quantity
+    beqz activated End
+    s stelliteSilo Open 1
+j End
+
+# Wait 0.5s and then run main loop
+End:
+    s quantity Setting tmp 
+    yield
+j Loop

@@ -1,0 +1,66 @@
+# Define devices
+alias HashIC d0
+alias button d1
+alias constantanSilo d2
+alias waspaloySilo d3
+alias inconelSilo d4
+alias astroloySilo d5
+alias quantity db
+
+# Temporary variable
+alias tmp r0
+alias activated r1
+
+# Main loop
+Loop:
+    # Close all silos
+    s constantanSilo Open 0
+    s waspaloySilo Open 0
+    s inconelSilo Open 0
+    s astroloySilo Open 0
+
+    l activated button Activate
+
+    l tmp HashIC Setting
+    beq tmp 1058547521 Constantan
+    beq tmp 156348098 Waspaloy
+    beq tmp -787796599 Inconel
+    beq tmp 412924554 Astroloy
+
+    # Has not on this IC - Reset
+    move tmp 0
+j End
+
+# Open Constantan silo
+Constantan:
+    l tmp constantanSilo Quantity
+    beqz activated End
+    s constantanSilo Open 1
+j End
+
+# Open Waspaloy silo
+Waspaloy:
+    l tmp waspaloySilo Quantity
+    beqz activated End
+    s waspaloySilo Open 1
+j End
+
+# Open Inconel silo
+Inconel:
+    l tmp inconelSilo Quantity
+    beqz activated End
+    s inconelSilo Open 1
+j End
+
+# Open Astroloy silo
+Astroloy:
+    l tmp astroloySilo Quantity
+    beqz activated End
+    s astroloySilo Open 1
+j End
+
+# Wait 0.5s and then run main loop
+End:
+    s quantity Setting tmp 
+    yield
+j Loop
